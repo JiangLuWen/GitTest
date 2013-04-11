@@ -45,8 +45,12 @@ int main(){
   //calculate mass distribution and store in TH1
   t_mc->Draw("(child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2>>m_mc");
   t_data->Draw("(child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2>>m_data");
+
+  //get hist
   TH1F* hm_mc = (TH1F*)gDirectory->Get("m_mc");
   TH1F* hm_data = (TH1F*)gDirectory->Get("m_data");
+
+  inputroot.Close();
 
   //ready to draw
   TCanvas* canvas = new TCanvas("cv","HW4",700,500);
@@ -62,7 +66,6 @@ int main(){
   TImage *img = TImage::Create();
   img->FromPad(canvas);
   img->WriteImage("hw4.png");
-  inputroot.Close();
   delete img;
   return 0;
 }
