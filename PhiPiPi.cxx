@@ -914,13 +914,14 @@ void PhiPiPi::write_ana_data() {
 //	m4rft[nGood + 1][3] = boosted_four_mom.vect().theta();
 //	++m_particle_index;
 //
-	m_gamma_index = 0;
-	m_dang[0] = s_dang[m_g1];
-	m_eraw[0] = s_eraw[m_g1];
-	++m_gamma_index;
-	m_dang[1] = s_dang[m_g2];
-	m_eraw[1] = s_eraw[m_g2];
-	++m_gamma_index;
+// 这里暂时不需要光子，可以先不管
+//	m_gamma_index = 0;
+//	m_dang[0] = s_dang[m_g1];
+//	m_eraw[0] = s_eraw[m_g1];
+//	++m_gamma_index;
+//	m_dang[1] = s_dang[m_g2];
+//	m_eraw[1] = s_eraw[m_g2];
+//	++m_gamma_index;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
