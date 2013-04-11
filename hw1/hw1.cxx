@@ -26,9 +26,64 @@
  *
  ***********************************************/
 #include <iostream>
+#include <vector>
+#include <cmath>
+#include <string>
+
+#include "TF1.h" //for TF1 class
+#include "TH1F.h" //for TH1F class
+#include "TMath.h" //for TMath::Landau()
+#include "TCanvas.h" //for TCanvas class
+#include "TImage.h"
+#include "TMultiGraph.h"
+#include "TGraph.h"
 
 using namespace std;
+typedef vector<TH1*> HistV;
+double landauf(double *x, double *par);
 int main(){
+  //define landau formula
+  TF1* myf = new TF1("mylandau",landauf,-3,10,3);
+  myf->SetParameters(1.0,2,1);
+
+  //create a vector for holding hist
+  HistV histv;
+  
+  //get ready to initial hist
+  const int num = 3;
+  string histvName[num] = {"ld_1e2","ld_1e3","ld_1e4"};
+  string histvTitle[num] = {"Landau 100 entris","Landau 1000 entris","Landau 10000 entris"};
+  int histEntries[num] = {100,1000,10000};
+
+  //new hist and fill them
+  TCanvas* canvas = new TCanvas("myc","HW1",800,600);
+  TMultiGraph* mg = new TMultiGraph();
+  for(int i = 0;i<num;i++){
+    histv.push_back(new TH1F(histvName[i].c_str(),histvTitle[i].c_str(),100,-3,10));
+    histv[i]->FillRandom("mylandau",histEntries[i]);
+    histv[i]->Draw("same");
+    mg->Add();
+  }
+
+  TImage *img = TImage::Create();
+  img->FromPad(canvas);
+  img->WriteImage("hw1.png");
+  delete img;
+
+  //delete all pointers
+  for (HistV::size_type ix = 0; ix != histv.size(); ++ix)
+    delete histv[ix];
+  delete myf;
+
+  //return
   return 0;
 }
 
+double landauf(double *_x, double *_par){
+  double x = _x[0];
+  double A = _par[0];
+  double mu = _par[1];
+  double c = _par[2];
+  double y = A*TMath::Landau(x,mu,c,true);
+  return y;
+} 
