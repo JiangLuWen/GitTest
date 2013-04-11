@@ -30,6 +30,9 @@
  ***********************************************/
 #include<iostream>
 
+#include "Rtypes.h"//for kFALSE
+#include "TROOT.h" //for gROOT
+#include "TStyle.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h" 
@@ -38,11 +41,13 @@
 #include "TMath.h"
 
 //g
-const double g[4] = {-1,1,1,1};
-void fillmass(TTree* tree,int entry,TH1* hist,double* p1,double* p2);
+const double g[4] = {1,1,1,-1};
+double fillmass(TTree* tree,int entry,TH1* hist,double* p1,double* p2);
 
 using namespace std;
 int main(){
+#include "dayabayStyle.C"
+  gROOT->SetStyle("dybStyle");
   //get tree from input root file
   TFile inputroot("jpsi_rec.root");
   TTree* t_mc = (TTree*)inputroot.Get("t_mc");
@@ -58,28 +63,61 @@ int main(){
   t_data->SetBranchAddress("child_p2",p2);
 
   //set up hist for filling
-  const int binN = 20;
-  const double binStart = 8.8;
-  const double binEnd = 12.7;
+  const int binN = 100;
+  const double binStart = 2.95;
+  const double binEnd = 3.28;
   TH1F* hm_mc = new TH1F("h_mc","J/psi mass from MC",binN,binStart,binEnd);
   TH1F* hm_data = new TH1F("h_data","J/psi mass from DATA",binN,binStart,binEnd);
 
   //Fill mass of mc and data
+  double min(20),max(0);
   for(int i = 0;i<t_mc->GetEntries();i++){
-    fillmass(t_mc,i,hm_mc,p1,p2);
-    fillmass(t_data,i,hm_data,p1,p2);
+    double mass = fillmass(t_mc,i,hm_mc,p1,p2);
+    min = (mass<min)?mass:min;
+    max = (mass>max)?mass:max;
+  }
+  cout<<min<<endl;
+  cout<<max<<endl;
+  for(int i = 0;i<t_data->GetEntries();i++){
+    double mass = fillmass(t_data,i,hm_data,p1,p2);
+    min = (mass<min)?mass:min;
+    max = (mass>max)?mass:max;
+  }
+  cout<<min<<endl;
+  cout<<max<<endl;
+
+  //get the signal
+  TH1F* hm_signal = new TH1F("h_signal","signal",binN,binStart,binEnd);
+  for(int i = 0;i<binN+1;i++){
+    /*
+    Convention for numbering bins
+
+    For all histogram types: nbins, xlow, xup
+      bin = 0;       underflow bin
+      bin = 1;       first bin with low-edge xlow INCLUDED
+      bin = nbins;   last bin with upper-edge xup EXCLUDED
+      bin = nbins+1; overflow bin
+    From root site
+    */
+    hm_signal->SetBinContent(i,hm_data->GetBinContent(i)-hm_mc->GetBinContent(i));
+    hm_signal->SetBinError(i,hm_data->GetBinError(i)-hm_mc->GetBinError(i));
   }
 
   //ready to draw
   TCanvas* canvas = new TCanvas("cv","HW4",700,500);
 
+  //draw the data hist
+  hm_data->Draw("e");
+  hm_data->SetStats(kFALSE);
+  
   //draw the mc hist
   hm_mc->SetFillColor(45);
-  hm_mc->Draw();
+  hm_mc->Draw("same");
+  hm_mc->SetStats(kFALSE);
 
-  //draw the data hist
-  hm_data->Draw("esame");
-  
+  //draw the signal
+  hm_signal->Draw("same");
+
   //export png
   TImage *img = TImage::Create();
   img->FromPad(canvas);
@@ -88,12 +126,13 @@ int main(){
   delete img;
   return 0;
 }
-void fillmass(TTree* tree,int entry,TH1* hist,double* p1,double* p2){
+double fillmass(TTree* tree,int entry,TH1* hist,double* p1,double* p2){
     tree->GetEntry(entry);
-    //cout<<p1[0]<<endl;
     double mass2 = 0;
-    for(int d = 0;d<4;d++)
-      mass2 += TMath::Power(p1[d]+p1[d],2)*g[d];
-    cout<<mass2<<endl;
-    hist->Fill(mass2);
+    for(int d = 0;d<4;d++){
+      mass2 += TMath::Power(p1[d]+p2[d],2)*g[d];
+    }
+    double mass = TMath::Sqrt(-mass2);
+    hist->Fill(mass);
+    return mass;
 }
