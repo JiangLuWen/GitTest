@@ -65,6 +65,7 @@ int main(){
     mg->Add();
   }
 
+  //export png
   TImage *img = TImage::Create();
   img->FromPad(canvas);
   img->WriteImage("hw1.png");
