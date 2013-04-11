@@ -59,8 +59,10 @@ int main(){
 
   //set up hist for filling
   const int binN = 20;
-  TH1F* hm_mc = new TH1F("h_mc","J/psi mass from MC",binN,8.8,10.7);
-  TH1F* hm_data = new TH1F("h_data","J/psi mass from DATA",binN,8.8,10.7);
+  const double binStart = 8.8;
+  const double binEnd = 12.7;
+  TH1F* hm_mc = new TH1F("h_mc","J/psi mass from MC",binN,binStart,binEnd);
+  TH1F* hm_data = new TH1F("h_data","J/psi mass from DATA",binN,binStart,binEnd);
 
   //Fill mass of mc and data
   for(int i = 0;i<t_mc->GetEntries();i++){
