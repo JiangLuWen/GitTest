@@ -56,14 +56,20 @@ int main(){
   int histEntries[num] = {100,1000,10000};
 
   //new hist and fill them
+  //at the same time fit them
+  TF1* fitf[3];
   TCanvas* canvas = new TCanvas("myc","HW1",800,600);
+  string fitfName[num] = {"Fit func for hist1","Fit func for hist2","Fit func for hist3"};
   TMultiGraph* mg = new TMultiGraph();
   for(int i = 0;i<num;i++){
     histv.push_back(new TH1F(histvName[i].c_str(),histvTitle[i].c_str(),100,-3,10));
     histv[i]->FillRandom("mylandau",histEntries[i]);
-    histv[i]->Draw("same");
-    mg->Add();
+    fitf[i] = new TF1(fitfName[i].c_str(),landauf,-3,10,3);
+    fitf[i]->SetParameters(1.0,2,1);
+    histv[i]->Fit(fitfName[i].c_str(),"q");
+    mg->Add((new TGraph())->SetHistogram(histv[i]));
   }
+  mg->Draw("AP");
 
   TImage *img = TImage::Create();
   img->FromPad(canvas);
