@@ -28,12 +28,18 @@
  *    Plot the mass distribution, generate png 
  * file
  ***********************************************/
+#include<iostream>
 
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h" 
 #include "TCanvas.h"
 #include "TImage.h"
+#include "TMath.h"
+
+//g
+const double g[4] = {-1,1,1,1};
+void fillmass(TTree* tree,int entry,TH1* hist,double* p1,double* p2);
 
 using namespace std;
 int main(){
@@ -42,11 +48,25 @@ int main(){
   TTree* t_mc = (TTree*)inputroot.Get("t_mc");
   TTree* t_data = (TTree*)inputroot.Get("t_data");
 
-  //calculate mass distribution and store in TH1
-  t_mc->Draw("(child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2>>m_mc");
-  t_data->Draw("(child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2>>m_data");
-  TH1F* hm_mc = (TH1F*)gDirectory->Get("m_mc");
-  TH1F* hm_data = (TH1F*)gDirectory->Get("m_data");
+  //var for getting leaf
+  double p1[4],p2[4];
+
+  //set up the relationship
+  t_mc->SetBranchAddress("child_p1",p1);
+  t_mc->SetBranchAddress("child_p2",p2);
+  t_data->SetBranchAddress("child_p1",p1);
+  t_data->SetBranchAddress("child_p2",p2);
+
+  //set up hist for filling
+  const int binN = 20;
+  TH1F* hm_mc = new TH1F("h_mc","J/psi mass from MC",binN,8.8,10.7);
+  TH1F* hm_data = new TH1F("h_data","J/psi mass from DATA",binN,8.8,10.7);
+
+  //Fill mass of mc and data
+  for(int i = 0;i<t_mc->GetEntries();i++){
+    fillmass(t_mc,i,hm_mc,p1,p2);
+    fillmass(t_data,i,hm_data,p1,p2);
+  }
 
   //ready to draw
   TCanvas* canvas = new TCanvas("cv","HW4",700,500);
@@ -65,4 +85,13 @@ int main(){
   inputroot.Close();
   delete img;
   return 0;
+}
+void fillmass(TTree* tree,int entry,TH1* hist,double* p1,double* p2){
+    tree->GetEntry(entry);
+    //cout<<p1[0]<<endl;
+    double mass2 = 0;
+    for(int d = 0;d<4;d++)
+      mass2 += TMath::Power(p1[d]+p1[d],2)*g[d];
+    cout<<mass2<<endl;
+    hist->Fill(mass2);
 }
