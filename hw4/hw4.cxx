@@ -34,6 +34,7 @@
 #include "TH1F.h" 
 #include "TCanvas.h"
 #include "TImage.h"
+#include "TROOT.h" //for gROOT
 
 using namespace std;
 int main(){
@@ -50,22 +51,26 @@ int main(){
   TH1F* hm_mc = (TH1F*)gDirectory->Get("m_mc");
   TH1F* hm_data = (TH1F*)gDirectory->Get("m_data");
 
-  inputroot.Close();
-
   //ready to draw
   TCanvas* canvas = new TCanvas("cv","HW4",700,500);
 
+  //draw the data hist
+  hm_data->Draw("e");
+  
   //draw the mc hist
   hm_mc->SetFillColor(45);
-  hm_mc->Draw();
+  hm_mc->Draw("same");
 
-  //draw the data hist
-  hm_data->Draw("esame");
-  
   //export png
   TImage *img = TImage::Create();
   img->FromPad(canvas);
   img->WriteImage("hw4.png");
+
+  TFile outputroot("hw4.root","RECREATE");
+  hm_mc->Write();
+  hm_data->Write();
+  outputroot.Close();
+  inputroot.Close();
   delete img;
   return 0;
 }
