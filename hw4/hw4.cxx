@@ -80,15 +80,11 @@ int main(){
     min = (mass<min)?mass:min;
     max = (mass>max)?mass:max;
   }
-  cout<<min<<endl;
-  cout<<max<<endl;
   for(int i = 0;i<t_data->GetEntries();i++){
     double mass = fillmass(t_data,i,hm_data,p1,p2);
     min = (mass<min)?mass:min;
     max = (mass>max)?mass:max;
   }
-  cout<<min<<endl;
-  cout<<max<<endl;
 
   //get the signal
   TH1F* hm_signal = new TH1F("h_signal","signal",binN,binStart,binEnd);
