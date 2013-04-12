@@ -40,6 +40,8 @@
 #include "TImage.h"
 #include "TMath.h"
 #include "TF1.h"
+#include "TPaveStats.h"
+#include "TLegend.h"
 
 //g
 const double g[4] = {1,1,1,-1};
@@ -149,8 +151,8 @@ int main(){
   ptstats->SetOptStat(0);
   ptstats->SetOptFit(111);
   ptstats->Draw();
-  h_signal->GetListOfFunctions()->Add(ptstats);
-  ptstats->SetParent(h_signal);
+  hm_signal->GetListOfFunctions()->Add(ptstats);
+  ptstats->SetParent(hm_signal);
 
   TLegend *leg = new TLegend(0.1997126,0.7097458,0.3994253,0.9088983,NULL,"brNDC");
   leg->AddEntry(hm_data,"data","pe");
