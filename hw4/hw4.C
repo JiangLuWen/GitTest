@@ -29,28 +29,39 @@
  * file
  ***********************************************/
 
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1F.h" 
-#include "TCanvas.h"
-#include "TImage.h"
-#include "TROOT.h" //for gROOT
-
-using namespace std;
-int hw4(){
+{
   //get tree from input root file
   TFile inputroot("jpsi_rec.root");
   TTree* t_mc = (TTree*)inputroot.Get("t_mc");
   TTree* t_data = (TTree*)inputroot.Get("t_data");
 
   //calculate mass distribution and store in TH1
-  t_mc->Draw("(child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2>>m_mc");
-  t_data->Draw("(child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2>>m_data");
+  t_mc->Draw("sqrt((child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2)>>m_mc");
+  t_data->Draw("sqrt((child_p1[3]+child_p2[3])**2-(child_p1[2]+child_p2[2])**2-(child_p1[1]+child_p2[1])**2-(child_p1[0]+child_p2[0])**2)>>m_data");
 
   //get hist
   TH1F* hm_mc = (TH1F*)gDirectory->Get("m_mc");
   TH1F* hm_data = (TH1F*)gDirectory->Get("m_data");
 
+  //get the signal
+  const int binN = 100;
+  const double binStart = 2.95;
+  const double binEnd = 3.28;
+  TH1F* hm_signal = new TH1F("h_signal","signal",binN,binStart,binEnd);
+  for(int i = 0;i<binN+1;i++){
+    /*
+    Convention for numbering bins
+
+    For all histogram types: nbins, xlow, xup
+      bin = 0;       underflow bin
+      bin = 1;       first bin with low-edge xlow INCLUDED
+      bin = nbins;   last bin with upper-edge xup EXCLUDED
+      bin = nbins+1; overflow bin
+    From root site
+    */
+    hm_signal->SetBinContent(i,hm_data->GetBinContent(i)-hm_mc->GetBinContent(i));
+    hm_signal->SetBinError(i,hm_data->GetBinError(i)-hm_mc->GetBinError(i));
+  }
   //ready to draw
   TCanvas* canvas = new TCanvas("cv","HW4",700,500);
 
@@ -61,15 +72,11 @@ int hw4(){
   hm_mc->SetFillColor(45);
   hm_mc->Draw("same");
 
-  //export png
-  TImage *img = TImage::Create();
-  img->FromPad(canvas);
-  img->WriteImage("hw4.png");
+  //draw the signal
+  TF1 mygaus("fgaus","gaus");
+  mygaus->SetNpx(500);
+  mygaus->SetLineWidth(4);
+  mygaus->SetLineColor(kMagenta);
+  hm_signal->Fit("fgaus","","epsame");
 
-  TFile outputroot("hw4.root","RECREATE");
-  hm_mc->Write();
-  hm_data->Write();
-  outputroot.Close();
-  inputroot.Close();
-  delete img;
 }
