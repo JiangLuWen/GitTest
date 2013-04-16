@@ -152,7 +152,7 @@ int main(){
 
   TLegend *leg = new TLegend(0.1997126,0.7097458,0.3994253,0.9088983,NULL,"brNDC");
   leg->AddEntry(hm_data,"data","pe");
-  leg->AddEntry(hm_mc,"MC","pe");
+  leg->AddEntry(hm_mc,"MC","lf");
   leg->AddEntry(hm_signal,"signal","pe");
   leg->AddEntry(myf,"Fit","l");
   leg->SetFillColor(0);

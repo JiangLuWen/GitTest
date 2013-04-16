@@ -2,7 +2,7 @@ TARGET = hw4
 SOURCE = $(TARGET).cxx
 CC = g++
 LIBS = `root-config --libs`
-CFLAGS = `root-config --cflags`
+CFLAGS = `root-config --cflags` -I../include
 COMIPLEFLAGS = -fPIC -g -Wall -O2
 
 all:$(TARGET)
